@@ -13,5 +13,6 @@ WORKDIR /etc/config/kratos
 # Expose ports
 EXPOSE 4433 4434
 
-# Use the startup script
+# Override entrypoint and use the startup script
+ENTRYPOINT []
 CMD ["sh", "/start.sh"]
