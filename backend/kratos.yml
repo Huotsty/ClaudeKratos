@@ -1,0 +1,115 @@
+version: v1.0.0
+
+dsn: env://DSN
+
+serve:
+  public:
+    base_url: env://SERVE_PUBLIC_BASE_URL
+    cors:
+      enabled: true
+      allowed_origins:
+        - env://SELFSERVICE_ALLOWED_RETURN_URLS
+      allowed_methods:
+        - POST
+        - GET
+        - PUT
+        - PATCH
+        - DELETE
+      allowed_headers:
+        - Authorization
+        - Cookie
+        - Content-Type
+      exposed_headers:
+        - Content-Type
+        - Set-Cookie
+      allow_credentials: true
+  admin:
+    base_url: env://SERVE_ADMIN_BASE_URL
+
+selfservice:
+  default_browser_return_url: env://SELFSERVICE_DEFAULT_BROWSER_RETURN_URL
+  allowed_return_urls:
+    - env://SELFSERVICE_ALLOWED_RETURN_URLS
+
+  methods:
+    password:
+      enabled: true
+    totp:
+      config:
+        issuer: MyApplication
+      enabled: true
+    lookup_secret:
+      enabled: true
+    link:
+      enabled: true
+    code:
+      enabled: true
+
+  flows:
+    error:
+      ui_url: env://SELFSERVICE_DEFAULT_BROWSER_RETURN_URL/error
+
+    settings:
+      ui_url: env://SELFSERVICE_DEFAULT_BROWSER_RETURN_URL/settings
+      privileged_session_max_age: 15m
+      required_aal: highest_available
+
+    recovery:
+      enabled: true
+      ui_url: env://SELFSERVICE_DEFAULT_BROWSER_RETURN_URL/recovery
+      use: code
+
+    verification:
+      enabled: true
+      ui_url: env://SELFSERVICE_DEFAULT_BROWSER_RETURN_URL/verification
+      use: code
+      after:
+        default_browser_return_url: env://SELFSERVICE_DEFAULT_BROWSER_RETURN_URL
+
+    logout:
+      after:
+        default_browser_return_url: env://SELFSERVICE_DEFAULT_BROWSER_RETURN_URL
+
+    login:
+      ui_url: env://SELFSERVICE_DEFAULT_BROWSER_RETURN_URL/login
+      lifespan: 10m
+
+    registration:
+      lifespan: 10m
+      ui_url: env://SELFSERVICE_DEFAULT_BROWSER_RETURN_URL/registration
+      after:
+        password:
+          hooks:
+            - hook: session
+            - hook: show_verification_ui
+
+log:
+  level: info
+  format: json
+  leak_sensitive_values: false
+
+secrets:
+  cookie:
+    - env://SECRETS_DEFAULT
+  cipher:
+    - env://SECRETS_DEFAULT
+
+ciphers:
+  algorithm: xchacha20-poly1305
+
+hashers:
+  algorithm: bcrypt
+  bcrypt:
+    cost: 12
+
+identity:
+  default_schema_id: default
+  schemas:
+    - id: default
+      url: file:///etc/config/kratos/identity.schema.json
+
+courier:
+  smtp:
+    connection_uri: env://COURIER_SMTP_CONNECTION_URI
+    from_address: env://COURIER_SMTP_FROM_ADDRESS
+    from_name: env://COURIER_SMTP_FROM_NAME
